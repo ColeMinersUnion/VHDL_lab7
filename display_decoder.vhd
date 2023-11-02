@@ -32,7 +32,7 @@ ARCHITECTURE dataflow OF display_decoder IS
                
 
 BEGIN
-	 Disp(0) <= ((not A) and (not C) and (B xor D)) or ((A and D and (B xor C))); --fine
+	 Disp(0) <= ((not A) and (not C) and (B xor D)) or (A and D and (B xor C)); --fine
 
 	 Disp(1) <= (B and (not C) and (A xor D)) or (A and C and D) or (B and C and (not D)); --fine
 
