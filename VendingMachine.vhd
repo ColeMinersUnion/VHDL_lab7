@@ -5,6 +5,7 @@ entity VendingMachine is
 	port(Nickles, Dimes: IN std_logic;
 			Reset, Clock, Clock_50: IN std_logic;
 			Coke : OUT std_logic;
+			test : OUT std_logic;
 			states : OUT std_logic_vector(4 downto 0));
 end VendingMachine;
 
@@ -20,14 +21,13 @@ signal newClock : std_logic;
 signal state, nextState : state_05;
 	
 begin
+	bouncer : debounce port map(Clock_50, Clock, newClock);
 
-	--bouncer : debounce port map(Clock_50, Clock, newClock);
-
-	process(Clock_50, nextState, Reset)
+	process(newClock, nextState, Reset)
 	begin
 		if (Reset = '0') then
 			state <= ST1;
-		elsif (rising_edge(Clock_50)) then
+		elsif (rising_edge(newClock)) then
 			state <= nextState;
 		end if;
 	end process;
@@ -50,10 +50,10 @@ begin
 			when ST2 => 
 				states <= "00010";
 				coke <= '0';
-				if (Nickles <= '1') then
-					nextState <= ST4;
-				elsif (Dimes = '1') then
+				if (Dimes = '1' and Nickles = '0') then
 					nextState <= ST5;
+				elsif (Nickles <= '1') then
+					nextState <= ST4;
 				else 
 					nextState <= state;
 				end if;
