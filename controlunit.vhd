@@ -67,6 +67,8 @@ BEGIN
 				Tstep_D <= T3;
 			WHEN T3 =>
 				Tstep_D <= T0;
+			WHEN OTHERS =>
+				Tstep_D <= T0;
 				
          ----------------------------------------
          -- Add other states and behavior here --
