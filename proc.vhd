@@ -53,6 +53,7 @@ ARCHITECTURE Behavior OF proc IS
 	signal newClock : std_logic;
 	signal RR0, RR1, RR2, RR3, RR4, RR5, RR6, RR7, IRR, GR, AR : std_logic_vector(8 downto 0);
 	signal R0in, R1in, R2in, R3in, R4in, R5in, R6in, R7in, IrrIn, Gin, Ain : std_logic;
+	signal R0out, R1out, R2out, R3out, R4out, R5out, R6out, R7out, Irrout, Gout, Aout : std_logic_vector(8 downto 0);
 	
 	--busmux signals
 	signal Rout : std_logic_vector(0 to 7);
@@ -60,48 +61,49 @@ ARCHITECTURE Behavior OF proc IS
 	
 	--addsub signals
 	signal add_sub : std_logic;
-	signal X, Y, Solution : std_logic_vector(8 downto 0);
+	signal Solution : std_logic_vector(8 downto 0);
 	
 	--control unit signals
 	signal cpuIR : std_logic_vector(1 to 9);
 	signal cpuIRin, cpuDINout, cpuAin, cpuGin, cpuGout : std_logic;
-	signal cpuRin : std_logic_vector(7 downto 0);
+	signal cpuRin : std_logic_vector(0 to 7);
 	
 BEGIN
 	
 	dbr : debounce port map(Clock_50, clock, newClock);
-	
    ------------------------------------------------------------------
    -- Connect registers (R1 - R7, A, G, IR) --
    ------------------------------------------------------------------
-	R0 : regn port map(RR0, R0in, newClock);
-	R1 : regn port map(RR1, R1in, newClock);
-	R2 : regn port map(RR2, R2in, newClock);
-	R3 : regn port map(RR3, R3in, newClock);
-	R4 : regn port map(RR4, R4in, newClock);
-	R5 : regn port map(RR5, R5in, newClock);
-	R6 : regn port map(RR6, R6in, newClock);
-	R7 : regn port map(RR7, R7in, newClock);
-	IR : regn port map(IRR, IrrIn, newClock);
-	G : regn port map(GR, Gin, newClock);
-	A : regn port map(AR, Ain, newClock);
+	R0 : regn port map(BusWires, cpuRin(0), newClock, R0out);
+	R1 : regn port map(BusWires, cpuRin(1), newClock, R1out);
+	R2 : regn port map(BusWires, cpuRin(2), newClock, R2out);
+	R3 : regn port map(BusWires, cpuRin(3), newClock, R3out);
+	R4 : regn port map(BusWires, cpuRin(4), newClock, R4out);
+	R5 : regn port map(BusWires, cpuRin(5), newClock, R5out);
+	R6 : regn port map(BusWires, cpuRin(6), newClock, R6out);
+	R7 : regn port map(BusWires, cpuRin(7), newClock, R7out);
+	
+	IR : regn port map(DIN, cpuIRin, newClock, cpuIR);
+	G : regn port map(Solution, cpuGin, newClock, Gout);
+	A : regn port map(BusWires, cpuAin, newClock, Aout);
 	
    ------------------------------------------------------------------
    -- Connect bus multiplexer --
    ------------------------------------------------------------------
-	bmux : busmux port map(DIN, GR, RR0, RR1, RR2, RR3, RR4, RR5, RR6, RR7, 
-									Rout, GBusOut, DBusOut, BusWires); 
+	bmux : busmux port map(DIN, Gout, R0out, R1out, R2out, R3out, R4out, R5out, R6out, R7out, 
+									Rout, cpuGout, cpuDINout, BusWires); 
    ------------------------------------------------------------------
    -- Connect addsub --
    ------------------------------------------------------------------
-	calculator : addsub port map(add_sub , X, Y, Solution);
+	calculator : addsub port map(add_sub, Aout, BusWires, Solution);
    ------------------------------------------------------------------
    -- Connect control unit --
    ------------------------------------------------------------------
    houston : controlunit port map(newClock, ResetN, Run,
 											cpuIR,
-											IrrIn, cpuDINout, cpuAin, cpuGin, cpuGout,
-											add_sub, Rout, cpuRin,
+											cpuIRin, cpuDINout, cpuAin, cpuGin, cpuGout,
+											add_sub, 
+											Rout, cpuRin,
 											Done);
 											
 	 
